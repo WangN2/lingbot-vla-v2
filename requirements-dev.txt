@@ -1,0 +1,4 @@
+# Development / test dependencies. Not required for training or inference.
+# Install with:
+#   pip install -r requirements-dev.txt
+pytest>=8.0
