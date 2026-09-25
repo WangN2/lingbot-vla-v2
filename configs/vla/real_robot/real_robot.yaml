@@ -50,8 +50,8 @@ train:
   token_shared_intermediate_size: 704
   bias_update_speed: 0
   sequence_wise_mode: "per_sequence"
-  sequence_wise_loss_coeff: 1e-3
-  router_z_loss_coeff: 1e-4
+  sequence_wise_loss_coeff: 1.0e-3
+  router_z_loss_coeff: 1.0e-4
   router_activation: "sigmoid"
   routed_scaling_factor: 4.0
   use_shared_expert_gate: false

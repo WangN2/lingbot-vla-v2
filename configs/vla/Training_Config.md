@@ -331,7 +331,7 @@ train:
 | `robot_config_root` | str | — | Directory containing robot config YAML files, for example `configs/robot_configs`. |
 | `joints` | List[Dict] | — | Max dim of each named joints in data. |
 | `cameras` | List[str] | — | Camera names in data. |
-| `prompt_type` | str | `"both"` | Prompt type. Supported values are `"global"`, `"subtask"`, and `"both"`. RoboTwin uses `"global"`. |
+| `prompt_type` | str | `"global"` | Prompt type. Supported values are `"global"` and `"subtask"`. RoboTwin uses `"global"`. |
 | `norm_type` | List[Dict[str, str]] | — | Per-joint normalization type used by `train_lingbotvla.py`. Each joint type in `data.joints` that appears in states/actions should have one entry, for example `[{arm.position: bounds_99_woclip}, {effector.position: bounds_99_woclip}]`. Options include `"meanstd"`, `"bounds_98"`, `"bounds_99"`, `"bounds_98_woclip"`, `"bounds_99_woclip"`, `"std"`, `"minmax"`, `"minmax_woclip"`, `"sincos"`, and `"identity"`. |
 | `norm_stats_file` | str | — | Path to pre-computed normalization statistics JSON file. Must be the same when computing normalization statistics! |
 | `use_future_image` | bool | `false` | Load future image frames for native-depth/future-video training. |
@@ -393,7 +393,7 @@ If you also set `global_batch_size` explicitly, it must be consistent with the c
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `optimizer` | str | `"adamw"` | Optimizer type. Supported values are `"adamw"`, `"anyprecision_adamw"`, and `"muon"`. Set `optimizer: muon` or pass `--train.optimizer muon` to enable the Muon optimizer. |
+| `optimizer` | str | `"adamw"` | Optimizer type. Supported values are `"adamw"`, `"anyprecision_adamw"`, `"muon"`, and `"dist_muon"`. Set `optimizer: muon` or pass `--train.optimizer muon` to enable the Muon optimizer. `dist_muon` (distributed Muon, flex-shard) requires `data_parallel_mode: fsdp2` with at least 2 DP ranks and is incompatible with `use_moe_expert_lr`. |
 | `loss_type` | str | `"fm"` | Loss function. `"fm"` for MSE flow-matching, `"L1_fm"` for L1 flow-matching. |
 | `data_parallel_mode` | str | `"ddp"` | Distributed data parallel strategy. Options: `"ddp"`, `"fsdp1"`, `"fsdp2"`. |
 | `enable_gradient_checkpointing` | bool | `false` | Enable gradient checkpointing to reduce GPU memory usage. Keep it `true` on memory-constrained GPUs; set it to `false` when VRAM is sufficient for faster training. |
@@ -416,7 +416,10 @@ If you also set `global_batch_size` explicitly, it must be consistent with the c
 | `token_top_k` | int | `1` | Top-k experts selected per token. |
 | `token_moe_intermediate_size` | int | `256` | Intermediate size for token-level MoE expert FFN. |
 | `token_shared_intermediate_size` | int | `256` | Intermediate size for token-level shared expert FFN. |
-| `bias_update_speed` | float | `0.001` | Bias update speed for loss-free MoE load balancing. |
+| `bias_update_speed` | float | `0.001` | Bias update speed for loss-free MoE load balancing. `0` disables the loss-free bias update (bias stays frozen at 0). |
+| `sequence_wise_loss_coeff` | float | `0.001` | Sequence-wise MoE balance aux loss coefficient. `0` disables it. |
+| `sequence_wise_mode` | str | `"per_sequence"` | Sequence-wise balance granularity: `"per_sequence"` balances experts within each sample's action tokens; `"global"` treats the whole batch as one sequence. |
+| `router_z_loss_coeff` | float | `0.0` | Router z-loss coefficient that keeps router logits small. `0` disables it. |
 | `router_activation` | str | `"softmax"` | Router activation function, for example `"softmax"` or `"sigmoid"`. |
 | `routed_scaling_factor` | float | `1.0` | Scaling factor applied to routing weights after normalization. |
 | `use_shared_expert_gate` | bool | `true` | Use sigmoid gate on shared expert output. |
